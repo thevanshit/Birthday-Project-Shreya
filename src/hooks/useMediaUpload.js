@@ -50,7 +50,8 @@ export const useMediaUpload = () => {
           
           resolve({
             id,
-            src: `indexed:${id}`, // Mark as stored in IndexedDB
+            src: `indexed:${id}`,
+            srcId: id,
             type: 'video',
             name: file.name,
             size: file.size
