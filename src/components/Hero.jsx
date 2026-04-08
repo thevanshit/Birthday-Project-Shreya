@@ -36,7 +36,16 @@ const LetterAnimation = ({ text }) => {
       className="font-sans text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-semibold tracking-tight inline-block"
     >
       {letters.map((letter, index) => (
-        <motion.span key={index} variants={letterVariant} className="inline-block">
+        <motion.span
+          key={index}
+          variants={letterVariant}
+          className="inline-block"
+          whileHover={{
+            y: -4,
+            textShadow: "0 0 20px rgba(212, 165, 116, 0.8)",
+            transition: { duration: 0.2 },
+          }}
+        >
           {letter === ' ' ? '\u00A0' : letter}
         </motion.span>
       ))}
@@ -47,14 +56,48 @@ const LetterAnimation = ({ text }) => {
 const Hero = () => {
   return (
     <section className="min-h-screen flex flex-col justify-center items-center text-center px-6 relative">
-      <div className="space-y-2">
-        <LetterAnimation text={config.name} />
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative"
+      >
+        <motion.div
+          animate={{
+            scale: [1, 1.02, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          className="absolute inset-0 blur-3xl bg-accent/30 rounded-full"
+        />
+        
+        <motion.div
+          animate={{
+            boxShadow: [
+              '0 0 30px rgba(212, 165, 116, 0.1)',
+              '0 0 60px rgba(212, 165, 116, 0.2)',
+              '0 0 30px rgba(212, 165, 116, 0.1)',
+            ],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          className="relative"
+        >
+          <LetterAnimation text={config.name} />
+        </motion.div>
+      </motion.div>
 
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 1.5, ease: 'easeOut' }}
+        transition={{ duration: 0.8, delay: 1.8, ease: 'easeOut' }}
         className="mt-6 text-text-secondary text-lg sm:text-xl font-light tracking-wide"
       >
         {config.subtitle}
@@ -63,7 +106,7 @@ const Hero = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 2 }}
+        transition={{ duration: 0.6, delay: 2.2 }}
         className="absolute bottom-12"
       >
         <motion.div
