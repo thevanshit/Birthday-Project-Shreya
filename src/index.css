@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #FAFAFA;
+  --color-text: #1a1a1a;
+  --color-text-light: #666666;
+  --color-border: #E5E5E5;
+  --font-family-sans: Inter, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #FFFFFF;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+}
