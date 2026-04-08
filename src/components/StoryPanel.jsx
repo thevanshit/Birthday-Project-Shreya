@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Edit2, Trash2, Calendar } from 'lucide-react';
+import { X, Edit2, Trash2, Calendar, Image, Film } from 'lucide-react';
 import { useStory } from '../context/StoryContext';
 import { formatFullDate } from '../utils/helpers';
-import VideoPlayer from './VideoPlayer';
+import MediaCarousel from './MediaCarousel';
 
 const StoryPanel = () => {
-  const { selectedItem, isPanelOpen, closePanel, openModal, removeItem } = useStory();
+  const { 
+    selectedItem, 
+    isPanelOpen, 
+    closePanel, 
+    openModal, 
+    removeItem,
+    selectedMediaIndex,
+    setMediaIndex
+  } = useStory();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -35,6 +43,11 @@ const StoryPanel = () => {
     }
   };
 
+  if (!selectedItem) return null;
+
+  const mediaCount = selectedItem.media?.length || 0;
+  const hasVideo = selectedItem.media?.some(m => m.type === 'video');
+
   return (
     <AnimatePresence>
       {isPanelOpen && selectedItem && (
@@ -57,11 +70,21 @@ const StoryPanel = () => {
           >
             <div className="sticky top-0 bg-surface/95 backdrop-blur-md border-b border-border z-10">
               <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-2">
-                  <Calendar size={14} className="text-accent" />
-                  <span className="text-sm font-mono text-accent">
-                    {formatFullDate(selectedItem.date) || 'No date'}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={14} className="text-accent" />
+                    <span className="text-sm font-mono text-accent">
+                      {formatFullDate(selectedItem.date) || 'No date'}
+                    </span>
+                  </div>
+                  {mediaCount > 1 && (
+                    <div className="flex items-center gap-1 px-2 py-0.5 bg-surface-hover rounded-full">
+                      {hasVideo && <Film size={12} className="text-text-secondary" />}
+                      <span className="text-xs text-text-secondary">
+                        {mediaCount} items
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={closePanel}
@@ -77,19 +100,12 @@ const StoryPanel = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="space-y-4"
               >
-                {selectedItem.type === 'video' ? (
-                  <VideoPlayer src={selectedItem.src} />
-                ) : (
-                  <div className="rounded-xl overflow-hidden">
-                    <img
-                      src={selectedItem.src}
-                      alt={selectedItem.title}
-                      className="w-full object-cover"
-                    />
-                  </div>
-                )}
+                <MediaCarousel 
+                  media={selectedItem.media || []}
+                  currentIndex={selectedMediaIndex}
+                  onIndexChange={setMediaIndex}
+                />
               </motion.div>
 
               <motion.div

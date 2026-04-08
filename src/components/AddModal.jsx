@@ -7,7 +7,7 @@ import MediaUploader from './MediaUploader';
 const AddModal = () => {
   const { isModalOpen, editingItem, closeModal, saveItem } = useStory();
   const [formData, setFormData] = useState({
-    media: null,
+    media: [],
     title: '',
     story: '',
     date: ''
@@ -17,13 +17,13 @@ const AddModal = () => {
   useEffect(() => {
     if (editingItem) {
       setFormData({
-        media: { src: editingItem.src, type: editingItem.type },
-        title: editingItem.title,
-        story: editingItem.story,
-        date: editingItem.date
+        media: editingItem.media || [],
+        title: editingItem.title || '',
+        story: editingItem.story || '',
+        date: editingItem.date || ''
       });
     } else {
-      setFormData({ media: null, title: '', story: '', date: '' });
+      setFormData({ media: [], title: '', story: '', date: '' });
     }
     setErrors({});
   }, [editingItem, isModalOpen]);
@@ -44,7 +44,7 @@ const AddModal = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.media) newErrors.media = 'Please add an image or video';
+    if (formData.media.length === 0) newErrors.media = 'Please add at least one photo or video';
     if (!formData.title.trim()) newErrors.title = 'Title is required';
     if (formData.title.length > 100) newErrors.title = 'Title must be under 100 characters';
     if (!formData.story.trim()) newErrors.story = 'Story is required';
@@ -57,8 +57,7 @@ const AddModal = () => {
     e.preventDefault();
     if (!validate()) return;
     saveItem({
-      src: formData.media.src,
-      type: formData.media.type,
+      media: formData.media,
       title: formData.title.trim(),
       story: formData.story.trim(),
       date: formData.date || null
@@ -103,7 +102,7 @@ const AddModal = () => {
             <form onSubmit={handleSubmit} className="p-5 space-y-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-text-secondary">
-                  Photo or Video
+                  Photos & Videos
                 </label>
                 <MediaUploader
                   value={formData.media}
