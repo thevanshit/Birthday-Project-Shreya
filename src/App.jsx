@@ -1,14 +1,27 @@
-import Hero from './sections/Hero';
-import Story from './sections/Story';
-import FinalMessage from './sections/FinalMessage';
+import { StoryProvider } from './context/StoryContext';
+import Header from './components/Header';
+import Hero from './components/Hero';
+import Timeline from './components/Timeline';
+import StoryPanel from './components/StoryPanel';
+import AddButton from './components/AddButton';
+import AddModal from './components/AddModal';
+import Footer from './components/Footer';
 
 function App() {
   return (
-    <div className="bg-white min-h-screen">
-      <Hero />
-      <Story />
-      <FinalMessage />
-    </div>
+    <StoryProvider>
+      <div className="bg-bg min-h-screen text-text-primary">
+        <Header />
+        <main>
+          <Hero />
+          <Timeline />
+        </main>
+        <Footer />
+        <AddButton />
+        <StoryPanel />
+        <AddModal />
+      </div>
+    </StoryProvider>
   );
 }
 
