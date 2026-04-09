@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { useMediaStore } from './useMediaStore';
 import { generateId } from '../utils/helpers';
 import heic2any from 'heic2any';
 
@@ -7,36 +6,27 @@ export const useMediaUpload = () => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
-  const { saveMedia } = useMediaStore();
 
   const convertHeicToJpeg = async (file) => {
     try {
-      console.log('Starting HEIC conversion for:', file.name);
-      
       const result = await heic2any({
         blob: file,
         toType: "image/jpeg",
         quality: 0.85
       });
       
-      console.log('HEIC conversion result:', result);
-      
-      // Handle both single blob and array of blobs
       const blob = Array.isArray(result) ? result[0] : result;
       
       if (!blob) {
         throw new Error('Conversion returned no image data');
       }
       
-      // Convert blob to a proper file-like object for FileReader
       const convertedFile = new File([blob], file.name.replace(/\.heic|\.heif/i, '.jpg'), {
         type: 'image/jpeg'
       });
       
-      console.log('Converted to:', convertedFile.type, convertedFile.size);
       return convertedFile;
     } catch (err) {
-      console.error('HEIC conversion failed:', err);
       throw new Error(`Failed to convert ${file.name}: ${err.message}`);
     }
   };
@@ -61,9 +51,9 @@ export const useMediaUpload = () => {
         return;
       }
 
-      const maxSize = 100 * 1024 * 1024; // 100MB
+      const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
-        reject(new Error('File exceeds 100MB limit'));
+        reject(new Error('File exceeds 50MB limit'));
         return;
       }
 
@@ -78,54 +68,47 @@ export const useMediaUpload = () => {
 
         setProgress(10);
 
-        // Convert HEIC to JPEG if needed
         if (isHeic) {
-          console.log('Converting HEIC file:', file.name);
           setProgress(20);
           fileToProcess = await convertHeicToJpeg(file);
           isConverted = true;
           setProgress(50);
-          console.log('HEIC conversion complete, file size:', fileToProcess.size);
         } else {
           setProgress(30);
         }
 
-        // Read as base64 for immediate preview
         const reader = new FileReader();
         
-        reader.onload = async () => {
+        reader.onload = () => {
           const preview = reader.result;
-          console.log('FileReader complete, preview length:', preview.length);
-          setProgress(70);
+          setProgress(90);
           
-          // Save to IndexedDB for persistence
-          await saveMedia(id, fileToProcess);
-          setProgress(100);
-          
-          resolve({
+          const result = {
             id,
             src: preview,
             srcId: id,
             type: 'image',
             name: isConverted ? file.name.replace(/\.heic|\.heif/i, '.jpg') : file.name,
             size: fileToProcess.size
-          });
+          };
+          
+          console.log('useMediaUpload: File uploaded successfully', { id, srcLength: preview.length });
+          setProgress(100);
+          resolve(result);
         };
         
         reader.onerror = () => {
-          console.error('FileReader error:', reader.error);
           reject(new Error('Failed to read file'));
         };
         
         reader.readAsDataURL(fileToProcess);
       } catch (err) {
-        console.error('Upload error:', err);
         reject(err);
       } finally {
         setUploading(false);
       }
     });
-  }, [saveMedia]);
+  }, []);
 
   const uploadMultiple = useCallback(async (files) => {
     const results = [];
@@ -150,34 +133,42 @@ export const useMediaUpload = () => {
         return;
       }
 
-      const validImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
-      
+      const validImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
       const urlLower = url.toLowerCase();
-      const isImage = validImageExtensions.some(ext => urlLower.includes(ext));
-      
-      if (!isImage) {
-        const img = new Image();
-        img.onload = () => {
-          resolve({
-            id: generateId(),
-            src: url,
-            type: 'image',
-            name: url.split('/').pop()
-          });
-        };
-        img.onerror = () => {
-          reject(new Error('URL must point to an image'));
-        };
-        img.src = url;
+      const hasExtension = validImageExtensions.some(ext => urlLower.includes(ext));
+
+      if (hasExtension) {
+        resolve({
+          id: generateId(),
+          src: url,
+          type: 'image',
+          name: url.split('/').pop() || 'image.jpg'
+        });
         return;
       }
 
-      resolve({
-        id: generateId(),
-        src: url,
-        type: 'image',
-        name: url.split('/').pop()
-      });
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = () => {
+        resolve({
+          id: generateId(),
+          src: url,
+          type: 'image',
+          name: url.split('/').pop() || 'image.jpg'
+        });
+      };
+      
+      img.onerror = () => {
+        resolve({
+          id: generateId(),
+          src: url,
+          type: 'image',
+          name: url.split('/').pop() || 'image.jpg'
+        });
+      };
+      
+      img.src = url;
     });
   }, []);
 

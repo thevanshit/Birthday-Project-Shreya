@@ -1,22 +1,17 @@
 import { useState, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Link, X, Image, Plus, AlertCircle } from 'lucide-react';
 import { useMediaUpload } from '../hooks/useMediaUpload';
 
 const MediaItem = ({ item, onRemove, index }) => {
-  const [showPreview, setShowPreview] = useState(false);
-
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.2 }}
-      className="relative group"
+    <div
+      className="relative group transition-all duration-200 hover:scale-105"
+      style={{
+        animation: 'fadeIn 0.2s ease-out'
+      }}
     >
       <div 
         className="relative aspect-video bg-surface rounded-lg overflow-hidden border border-border cursor-pointer"
-        onClick={() => setShowPreview(true)}
       >
         <img 
           src={item.src} 
@@ -36,7 +31,7 @@ const MediaItem = ({ item, onRemove, index }) => {
         <Image size={10} />
         <span>{index + 1}</span>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -117,7 +112,20 @@ const MediaUploader = ({ value = [], onChange, error }) => {
 
   return (
     <div className="space-y-4">
-      {/* Media List */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .spinner {
+          animation: spin 1s linear infinite;
+        }
+      `}</style>
+
       {value.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -135,21 +143,18 @@ const MediaUploader = ({ value = [], onChange, error }) => {
           </div>
           
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-            <AnimatePresence>
-              {value.map((item, index) => (
-                <MediaItem
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  onRemove={handleRemove}
-                />
-              ))}
-            </AnimatePresence>
+            {value.map((item, index) => (
+              <MediaItem
+                key={item.id}
+                item={item}
+                index={index}
+                onRemove={handleRemove}
+              />
+            ))}
           </div>
         </div>
       )}
 
-      {/* Upload Area or Input Mode */}
       <div className="space-y-4">
         <div className="flex gap-2 p-1 bg-surface rounded-lg">
           <button
@@ -184,7 +189,7 @@ const MediaUploader = ({ value = [], onChange, error }) => {
               disabled={uploading}
             />
             
-            <label
+            <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -194,27 +199,22 @@ const MediaUploader = ({ value = [], onChange, error }) => {
                   ? 'border-accent bg-accent/10' 
                   : error || uploadError
                   ? 'border-red-500/50 bg-red-500/5 cursor-pointer'
-                  : value.length > 0
-                  ? 'border-border hover:border-accent/50 hover:bg-surface cursor-pointer'
                   : 'border-border hover:border-accent/50 hover:bg-surface cursor-pointer'
               }`}
             >
-                  {uploading ? (
+              {uploading ? (
                 <div className="flex flex-col items-center gap-3">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full"
+                  <div
+                    className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full spinner"
                   />
                   <span className="text-text-secondary text-sm">
                     {progress < 50 ? 'Converting HEIC...' : `Processing... ${progress}%`}
                   </span>
                   {progress > 0 && (
                     <div className="w-32 h-1 bg-surface rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-accent"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
+                      <div
+                        className="h-full bg-accent transition-all duration-300"
+                        style={{ width: `${progress}%` }}
                       />
                     </div>
                   )}
@@ -243,7 +243,7 @@ const MediaUploader = ({ value = [], onChange, error }) => {
                   </p>
                 </div>
               )}
-            </label>
+            </div>
           </>
         ) : (
           <div className="space-y-3">
@@ -266,7 +266,6 @@ const MediaUploader = ({ value = [], onChange, error }) => {
         )}
       </div>
 
-      {/* Errors */}
       {(error || uploadError) && (
         <div className="flex items-center gap-2 text-red-400 text-sm">
           <AlertCircle size={14} />

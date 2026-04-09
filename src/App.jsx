@@ -3,8 +3,6 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import Timeline from './components/Timeline';
 import StoryPanel from './components/StoryPanel';
-import AddButton from './components/AddButton';
-import AddModal from './components/AddModal';
 import Footer from './components/Footer';
 
 function App() {
@@ -17,9 +15,7 @@ function App() {
           <Timeline />
         </main>
         <Footer />
-        <AddButton />
         <StoryPanel />
-        <AddModal />
       </div>
     </StoryProvider>
   );

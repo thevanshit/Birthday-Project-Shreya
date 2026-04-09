@@ -6,6 +6,7 @@ import { useStory } from '../context/StoryContext';
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const { openModal, items } = useStory();
+  const itemsWithDate = items.filter(item => item.date);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,7 +29,7 @@ const Header = () => {
         <div className="flex items-center gap-3">
           <Heart size={20} className="text-accent fill-accent" />
           <span className="text-text-tertiary text-sm font-mono hidden sm:block">
-            {items.length} {items.length === 1 ? 'memory' : 'memories'}
+            {itemsWithDate.length} {itemsWithDate.length === 1 ? 'memory' : 'memories'}
           </span>
         </div>
 
