@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
-import { config } from '../data/config';
+import { Plus, Heart } from 'lucide-react';
 import { useStory } from '../context/StoryContext';
 
 const Header = () => {
@@ -27,7 +26,7 @@ const Header = () => {
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="font-display text-xl tracking-tight">{config.name}</span>
+          <Heart size={20} className="text-accent fill-accent" />
           <span className="text-text-tertiary text-sm font-mono hidden sm:block">
             {items.length} {items.length === 1 ? 'memory' : 'memories'}
           </span>

@@ -44,7 +44,7 @@ const AddModal = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (formData.media.length === 0) newErrors.media = 'Please add at least one photo or video';
+    if (formData.media.length === 0) newErrors.media = 'Please add at least one photo';
     if (!formData.title.trim()) newErrors.title = 'Title is required';
     if (formData.title.length > 100) newErrors.title = 'Title must be under 100 characters';
     if (!formData.story.trim()) newErrors.story = 'Story is required';
@@ -102,7 +102,7 @@ const AddModal = () => {
             <form onSubmit={handleSubmit} className="p-5 space-y-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-text-secondary">
-                  Photos & Videos
+                  Photos
                 </label>
                 <MediaUploader
                   value={formData.media}

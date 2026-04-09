@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, Film, Image } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Image, Maximize2, Loader2 } from 'lucide-react';
 import { useStory } from '../context/StoryContext';
 
 const MediaCarousel = ({ media = [], currentIndex = 0, onIndexChange }) => {
@@ -8,10 +8,21 @@ const MediaCarousel = ({ media = [], currentIndex = 0, onIndexChange }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const currentMedia = media[currentIndex];
   const currentUrl = currentMedia ? getMediaUrl(currentMedia) : null;
-  const isVideo = currentMedia?.type === 'video';
+
+  useEffect(() => {
+    if (currentUrl) {
+      const img = new Image();
+      img.onload = () => setIsLoading(false);
+      img.onerror = () => setIsLoading(false);
+      img.src = currentUrl;
+    } else {
+      setIsLoading(false);
+    }
+  }, [currentUrl]);
 
   const goToPrevious = useCallback(() => {
     if (currentIndex > 0) {
@@ -25,7 +36,6 @@ const MediaCarousel = ({ media = [], currentIndex = 0, onIndexChange }) => {
     }
   }, [currentIndex, media.length, onIndexChange]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (lightboxOpen) {
@@ -39,7 +49,6 @@ const MediaCarousel = ({ media = [], currentIndex = 0, onIndexChange }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxOpen, goToPrevious, goToNext]);
 
-  // Touch handlers for swipe
   const handleTouchStart = (e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
@@ -79,93 +88,94 @@ const MediaCarousel = ({ media = [], currentIndex = 0, onIndexChange }) => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3 }}
-          className="relative aspect-[4/3] bg-surface rounded-xl overflow-hidden cursor-pointer"
-          onClick={() => setLightboxOpen(true)}
+          className="relative aspect-[16/9] bg-surface rounded-2xl overflow-hidden cursor-pointer"
+          onClick={() => currentUrl && setLightboxOpen(true)}
         >
-          {isVideo ? (
-            <video
-              src={currentUrl}
-              className="w-full h-full object-contain"
-              controls
-              playsInline
-            />
+          {isLoading || !currentUrl ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 size={32} className="text-accent animate-spin" />
+                <span className="text-text-secondary text-sm">Loading...</span>
+              </div>
+            </div>
           ) : (
-            <img
-              src={currentUrl}
-              alt={`Memory ${currentIndex + 1}`}
-              className="w-full h-full object-contain"
-            />
+            <>
+              <img
+                src={currentUrl}
+                alt={`Memory ${currentIndex + 1}`}
+                className="w-full h-full object-contain bg-black"
+              />
+              
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20">
+                <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                  <Maximize2 size={24} className="text-white" />
+                </div>
+              </div>
+            </>
           )}
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation Arrows */}
-      {media.length > 1 && (
+      {media.length > 1 && !isLoading && (
         <>
           <button
             onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
             disabled={currentIndex === 0}
-            className={`absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all hover:bg-black/70 ${
-              currentIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
+            className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center transition-all hover:bg-black/80 ${
+              currentIndex === 0 ? 'opacity-30 cursor-not-allowed' : ''
             }`}
           >
-            <ChevronLeft size={20} className="text-white" />
+            <ChevronLeft size={22} className="text-white" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); goToNext(); }}
             disabled={currentIndex === media.length - 1}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all hover:bg-black/70 ${
-              currentIndex === media.length - 1 ? 'opacity-30 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
+            className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center transition-all hover:bg-black/80 ${
+              currentIndex === media.length - 1 ? 'opacity-30 cursor-not-allowed' : ''
             }`}
           >
-            <ChevronRight size={20} className="text-white" />
+            <ChevronRight size={22} className="text-white" />
           </button>
         </>
       )}
 
-      {/* Dot Indicators */}
-      {media.length > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
+      {media.length > 1 && !isLoading && (
+        <div className="flex justify-center gap-2 mt-5">
           {media.map((_, idx) => (
             <button
               key={idx}
               onClick={() => onIndexChange(idx)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`h-1.5 rounded-full transition-all duration-300 ${
                 idx === currentIndex 
-                  ? 'bg-accent w-6' 
-                  : 'bg-border hover:bg-text-tertiary'
+                  ? 'bg-accent w-8' 
+                  : 'bg-border/50 w-4 hover:bg-text-tertiary'
               }`}
             />
           ))}
         </div>
       )}
 
-      {/* Thumbnail Strip */}
-      {media.length > 1 && (
-        <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
+      {media.length > 1 && !isLoading && (
+        <div className="flex justify-center gap-3 mt-4 overflow-x-auto pb-2">
           {media.map((item, idx) => {
             const url = getMediaUrl(item);
-            const isVid = item.type === 'video';
             
             return (
               <button
                 key={idx}
                 onClick={() => onIndexChange(idx)}
-                className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all duration-200 ${
+                className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden transition-all duration-200 ${
                   idx === currentIndex 
                     ? 'ring-2 ring-accent scale-105' 
-                    : 'opacity-60 hover:opacity-100'
+                    : 'opacity-50 hover:opacity-100 hover:scale-105'
                 }`}
               >
-                {isVid ? (
-                  <>
-                    <video src={url} className="w-full h-full object-cover" muted />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Film size={12} className="text-white" />
-                    </div>
-                  </>
-                ) : (
+                {url ? (
                   <img src={url} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-surface flex items-center justify-center">
+                    <Image size={16} className="text-text-tertiary" />
+                  </div>
                 )}
               </button>
             );
@@ -175,30 +185,40 @@ const MediaCarousel = ({ media = [], currentIndex = 0, onIndexChange }) => {
     </div>
   );
 
-  // Lightbox Modal
-  if (lightboxOpen) {
+  if (lightboxOpen && currentUrl) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+        className="fixed inset-0 z-[100] bg-black/98 flex items-center justify-center"
         onClick={() => setLightboxOpen(false)}
       >
         <button
           onClick={() => setLightboxOpen(false)}
-          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors z-10"
+          className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors z-10"
         >
-          <X size={20} className="text-white" />
+          <X size={24} className="text-white" />
         </button>
 
-        <button
-          onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
-          disabled={currentIndex === 0}
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors disabled:opacity-30"
-        >
-          <ChevronLeft size={24} className="text-white" />
-        </button>
+        {media.length > 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
+              disabled={currentIndex === 0}
+              className="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors disabled:opacity-30"
+            >
+              <ChevronLeft size={28} className="text-white" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); goToNext(); }}
+              disabled={currentIndex === media.length - 1}
+              className="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors disabled:opacity-30"
+            >
+              <ChevronRight size={28} className="text-white" />
+            </button>
+          </>
+        )}
 
         <motion.img
           key={currentIndex}
@@ -211,31 +231,22 @@ const MediaCarousel = ({ media = [], currentIndex = 0, onIndexChange }) => {
           onClick={(e) => e.stopPropagation()}
         />
 
-        <button
-          onClick={(e) => { e.stopPropagation(); goToNext(); }}
-          disabled={currentIndex === media.length - 1}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors disabled:opacity-30"
-        >
-          <ChevronRight size={24} className="text-white" />
-        </button>
-
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2.5 bg-white/10 rounded-full backdrop-blur-md">
           {media.map((item, idx) => {
-            const isVid = item.type === 'video';
             return (
               <button
                 key={idx}
                 onClick={() => onIndexChange(idx)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentIndex ? 'bg-white' : 'bg-white/30 hover:bg-white/50'
+                  idx === currentIndex ? 'bg-white scale-125' : 'bg-white/40 hover:bg-white/60'
                 }`}
               />
             );
           })}
         </div>
 
-        <div className="absolute bottom-4 right-4 flex items-center gap-2 text-white/60 text-sm">
-          {isVideo ? <Film size={16} /> : <Image size={16} />}
+        <div className="absolute bottom-6 right-6 flex items-center gap-3 text-white/70 text-sm font-mono">
+          <Image size={18} />
           <span>{currentIndex + 1} / {media.length}</span>
         </div>
       </motion.div>

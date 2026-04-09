@@ -1,11 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Link, X, Image, Film, Plus, AlertCircle, GripVertical } from 'lucide-react';
+import { Upload, Link, X, Image, Plus, AlertCircle } from 'lucide-react';
 import { useMediaUpload } from '../hooks/useMediaUpload';
 
 const MediaItem = ({ item, onRemove, index }) => {
   const [showPreview, setShowPreview] = useState(false);
-  const isVideo = item.type === 'video';
 
   return (
     <motion.div
@@ -19,33 +18,11 @@ const MediaItem = ({ item, onRemove, index }) => {
         className="relative aspect-video bg-surface rounded-lg overflow-hidden border border-border cursor-pointer"
         onClick={() => setShowPreview(true)}
       >
-        {isVideo ? (
-          <>
-            <video 
-              src={item.src} 
-              className="w-full h-full object-cover" 
-              muted
-              preload="metadata"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                <Film size={20} className="text-white" />
-              </div>
-            </div>
-          </>
-        ) : (
-          <img 
-            src={item.src} 
-            alt={item.name || `Media ${index + 1}`}
-            className="w-full h-full object-cover"
-          />
-        )}
-        
-        {isVideo && (
-          <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/70 rounded text-xs text-white font-mono">
-            VIDEO
-          </div>
-        )}
+        <img 
+          src={item.src} 
+          alt={item.name || `Photo ${index + 1}`}
+          className="w-full h-full object-cover"
+        />
       </div>
 
       <button
@@ -56,7 +33,7 @@ const MediaItem = ({ item, onRemove, index }) => {
       </button>
 
       <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/50 backdrop-blur-sm rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-        <GripVertical size={10} />
+        <Image size={10} />
         <span>{index + 1}</span>
       </div>
     </motion.div>
@@ -145,7 +122,7 @@ const MediaUploader = ({ value = [], onChange, error }) => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-text-secondary">
-              Your Media ({value.length})
+              Your Photos ({value.length})
             </label>
             <button
               onClick={handleAddMore}
@@ -200,7 +177,7 @@ const MediaUploader = ({ value = [], onChange, error }) => {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,video/*"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.heic,.heif"
               onChange={handleFilesChange}
               className="hidden"
               multiple
@@ -222,7 +199,7 @@ const MediaUploader = ({ value = [], onChange, error }) => {
                   : 'border-border hover:border-accent/50 hover:bg-surface cursor-pointer'
               }`}
             >
-              {uploading ? (
+                  {uploading ? (
                 <div className="flex flex-col items-center gap-3">
                   <motion.div
                     animate={{ rotate: 360 }}
@@ -230,7 +207,7 @@ const MediaUploader = ({ value = [], onChange, error }) => {
                     className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full"
                   />
                   <span className="text-text-secondary text-sm">
-                    Processing... {progress}%
+                    {progress < 50 ? 'Converting HEIC...' : `Processing... ${progress}%`}
                   </span>
                   {progress > 0 && (
                     <div className="w-32 h-1 bg-surface rounded-full overflow-hidden">
@@ -254,15 +231,15 @@ const MediaUploader = ({ value = [], onChange, error }) => {
                   <div>
                     {value.length === 0 ? (
                       <>
-                        <p className="text-text-primary font-medium">Drop media here</p>
+                        <p className="text-text-primary font-medium">Drop photos here</p>
                         <p className="text-text-tertiary text-sm mt-1">or click to browse</p>
                       </>
                     ) : (
-                      <p className="text-text-primary font-medium">Add more media</p>
+                      <p className="text-text-primary font-medium">Add more photos</p>
                     )}
                   </div>
                   <p className="text-text-tertiary text-xs">
-                    PNG, JPG, MP4, WebM • Multiple files allowed
+                    PNG, JPG, GIF, WebP, HEIC • Multiple files allowed
                   </p>
                 </div>
               )}
@@ -275,7 +252,7 @@ const MediaUploader = ({ value = [], onChange, error }) => {
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
-              placeholder="Paste image or video URL..."
+              placeholder="Paste image URL..."
               className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none transition-colors"
             />
             <button

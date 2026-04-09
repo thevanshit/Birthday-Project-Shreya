@@ -64,10 +64,14 @@ export function StoryProvider({ children }) {
       for (const item of items) {
         if (item.media) {
           for (const m of item.media) {
-            if (m.srcId) {
-              const url = await getMedia(m.srcId);
-              if (url) {
-                newUrls[m.srcId] = url;
+            if (m.srcId && !newUrls[m.srcId]) {
+              try {
+                const url = await getMedia(m.srcId);
+                if (url) {
+                  newUrls[m.srcId] = url;
+                }
+              } catch (err) {
+                console.error('Failed to load media:', m.srcId, err);
               }
             }
           }
@@ -144,15 +148,20 @@ export function StoryProvider({ children }) {
   }, [deleteItem, getItem, deleteMultipleMedia, state.selectedId, closePanel]);
 
   const getMediaUrl = useCallback((mediaItem) => {
-    // If it's a direct URL (from URL upload), use it directly
-    if (mediaItem.src && !mediaItem.src.startsWith('indexed:')) {
+    // 1. If it's a direct data URL (base64), use it first - it's immediate
+    if (mediaItem.src && mediaItem.src.startsWith('data:')) {
       return mediaItem.src;
     }
-    // If it's stored in IndexedDB, get the URL
+    // 2. If it's stored in IndexedDB, get the URL
     if (mediaItem.srcId && mediaUrls[mediaItem.srcId]) {
       return mediaUrls[mediaItem.srcId];
     }
-    return mediaItem.src;
+    // 3. If it's a regular URL (from URL upload), use directly
+    if (mediaItem.src) {
+      return mediaItem.src;
+    }
+    // Fallback
+    return mediaItem.src || null;
   }, [mediaUrls]);
 
   const value = {

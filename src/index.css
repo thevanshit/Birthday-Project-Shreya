@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap');
 
 @theme {
   --color-bg: #0A0A0A;
@@ -13,9 +13,28 @@
   --color-accent: #D4A574;
   --color-accent-dim: #8B6F47;
   
-  --font-family-display: 'Playfair Display', Georgia, serif;
+  --font-family-display: 'Cinzel', Georgia, serif;
   --font-family-sans: 'Inter', system-ui, sans-serif;
   --font-family-mono: 'JetBrains Mono', monospace;
+
+  --animate-shimmer: shimmer 3s infinite;
+  --animate-sparkle: sparkle 2s ease-in-out infinite;
+  --animate-float: float 3s ease-in-out infinite;
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-200%) skewX(-12deg); }
+    100% { transform: translateX(200%) skewX(-12deg); }
+  }
+
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
 }
 
 * {
